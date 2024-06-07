@@ -1,0 +1,271 @@
+{
+	"name": "ETL03_Company_comment",
+	"properties": {
+		"description": "Extract company data from api",
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "spark01",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "1f96ca45-a232-4624-8310-d3c4f001c4d3"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/ac86b402-22ae-4573-b51d-10b49ac53875/resourceGroups/dp000-huv7g91/providers/Microsoft.Synapse/workspaces/synapsehuv7g91/bigDataPools/spark01",
+				"name": "spark01",
+				"type": "Spark",
+				"endpoint": "https://synapsehuv7g91.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/spark01",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.types import *\r\n",
+					"from pyspark.sql import functions as f\r\n",
+					"import requests\r\n",
+					"import pandas as pd "
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"try:\r\n",
+					"    import praw\r\n",
+					"except:\r\n",
+					"    !pip install praw\r\n",
+					"    import praw"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"user_agent='scraper 1.0 by /u/Adrian_10511'\r\n",
+					"\r\n",
+					"reddit= praw.Reddit(\r\n",
+					"    client_id='ZSsuFt18m9u6PnXJJwjF1A',\r\n",
+					"    client_secret='cKPHnxi_E9gr7HM5DKdO-XU7nFdO2w',\r\n",
+					"    user_agent = user_agent\r\n",
+					")"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"stock_symbols=['NVDA','AMD']\r\n",
+					"subreddit_name = \"stocks\"\r\n",
+					"# comment_ls = reddit.subreddit(subreddit_name).hot(limit=)\r\n",
+					"\r\n",
+					"list_=[]\r\n",
+					"for symbol in stock_symbols:\r\n",
+					"    list_.append([reddit.subreddit(subreddit_name).search(symbol,limit=10)]) \r\n",
+					"    \r\n",
+					""
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from praw.models import MoreComments\r\n",
+					"for top_level_comment in reddit.submission(\"1d181jb\").comments:\r\n",
+					"    if isinstance(top_level_comment, MoreComments):\r\n",
+					"        continue\r\n",
+					"    print(top_level_comment.body)"
+				],
+				"execution_count": 33
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"for i in comment_ls:\r\n",
+					"    print (i.title)"
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"\r\n",
+					"# get data from api \r\n",
+					"def get_stock_data(symbol,limit,apikey):\r\n",
+					"    url ='https://financialmodelingprep.com/api/v3/income-statement-as-reported/{0}?period=annual&limit={1}&apikey={2}'.format(symbol,limit,apikey)\r\n",
+					"    r = requests.get(url)\r\n",
+					"    data = r.json()\r\n",
+					"    return data\r\n",
+					"    \r\n",
+					"# read data into pandas df and change schema and add symbol\r\n",
+					"def transform_stock_data(data):\r\n",
+					"    df = (pd.DataFrame(data))\r\n",
+					"    return df\r\n",
+					"\r\n",
+					"# join data frame and load into csv\r\n",
+					"def concate_df(dataframe_list):\r\n",
+					"    united_df = pd.concat(dataframe_list)\r\n",
+					"    return united_df\r\n",
+					"\r\n",
+					"# turn pandas df into spark datafrme and change scheme\r\n",
+					"def read_into_sp(dataframe):\r\n",
+					"    result = (spark.createDataFrame(dataframe))\r\n",
+					"    return result\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 21
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"if __name__ == \"__main__\":\r\n",
+					"    # adls_path = \"adl://<your-storage-account>.azuredatalakegen2.net/<path-to-folder>/output.parquet\"\r\n",
+					"    apikey='Zw1r6iuegK2CX3beasj6nxAkrllOCkoy'\r\n",
+					"    #data size compact = 100 data points and full data from previous 20 years\r\n",
+					"    limit = 5\r\n",
+					"    # set up target ticker \r\n",
+					"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
+					"    # get data from api\r\n",
+					"    stock_data = [get_stock_data(symbol,limit,apikey) for symbol in symbol_list]\r\n",
+					"    # transfrom json into data frame\r\n",
+					"    transformed_df_list = [transform_stock_data(data) for data in stock_data]\r\n",
+					"    final_df = concate_df(transformed_df_list)\r\n",
+					"    final_df_sp = read_into_sp(final_df)\r\n",
+					"    print('load data into filepath')\r\n",
+					"    #add year \r\n",
+					"    add_year = final_df_sp.withColumn('year',f.year(f.col('date')))\r\n",
+					"    file_path ='abfss://files@datalakehuv7g91.dfs.core.windows.net/company_report/'\r\n",
+					"    add_year.write.parquet(file_path,partitionBy='symbol',mode='overwrite')"
+				],
+				"execution_count": 22
+			}
+		]
+	}
+}
