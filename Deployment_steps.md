@@ -14,11 +14,11 @@
 ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/ecfd5b8c-57a4-4f8c-b1ff-de1cab473acc)
 ## step 7	Create Azure key-value service for storing api-key
 1. Assign Key Vault Administrator to your azure AD 
- ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/2d7a01e6-f9f0-4ca8-95de-4638ca54b5ac)
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/2d7a01e6-f9f0-4ca8-95de-4638ca54b5ac)
 2. Store api-key
-   ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/0fb1caa4-89d5-43b1-b351-8db20e30eb1a)
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/0fb1caa4-89d5-43b1-b351-8db20e30eb1a)
 3. Grant access for Azure synapse work space to key-vault
-   ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/055d1d47-f03c-49eb-a866-9450492d7cf3)
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/055d1d47-f03c-49eb-a866-9450492d7cf3)
 ## step 8 Import notebooks from git hub to Azure synapse
 ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/e47c253e-4d71-44ed-8b90-a66e08fed341)
 
