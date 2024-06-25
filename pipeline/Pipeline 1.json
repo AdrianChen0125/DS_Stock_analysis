@@ -279,7 +279,14 @@
 			{
 				"name": "sentiment youtube",
 				"type": "SynapseNotebook",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "stock price prediction",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -345,18 +352,6 @@
 					},
 					"driverSize": "Small",
 					"numExecutors": 1
-				}
-			},
-			{
-				"name": "Execute Pipeline1",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"waitOnCompletion": true
 				}
 			}
 		],
