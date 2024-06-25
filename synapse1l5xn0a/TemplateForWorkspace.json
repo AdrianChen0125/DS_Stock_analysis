@@ -1,0 +1,2713 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "synapse1l5xn0a"
+		},
+		"synapse1l5xn0a-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'synapse1l5xn0a-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse1l5xn0a.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"synapse1l5xn0a-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://datalake1l5xn0a.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/spark0625')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/extract data and analysis')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "stock price",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL01_Stock_price",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "company_report",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "stock price",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL02_Company_report",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "reddit comments",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "company_report",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL03_reddit",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "youtube comments",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "reddit comments",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL04_Youtube_cm",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "stock_news",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "youtube comments",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL05_Stock_news",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "economic index",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "stock_news",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "ETL06_economic_index",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "time series",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "economic index",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "AL01_TIME_SERIES_Analysis",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "sentiments reddit",
+						"type": "SynapseNotebook",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "AL02_Sentiment_analysis_reddits",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					},
+					{
+						"name": "sentiments Youtubes",
+						"type": "SynapseNotebook",
+						"dependsOn": [
+							{
+								"activity": "sentiments reddit",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"notebook": {
+								"referenceName": "AL02_Sentiment_analysis_reddits",
+								"type": "NotebookReference"
+							},
+							"parameters": {
+								"run_id": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "string"
+								}
+							},
+							"snapshot": true,
+							"executorSize": "Small",
+							"conf": {
+								"spark.dynamicAllocation.enabled": false,
+								"spark.dynamicAllocation.minExecutors": 1,
+								"spark.dynamicAllocation.maxExecutors": 1
+							},
+							"driverSize": "Small",
+							"numExecutors": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/notebooks/ETL01_Stock_price')]",
+				"[concat(variables('workspaceId'), '/notebooks/ETL02_Company_report')]",
+				"[concat(variables('workspaceId'), '/notebooks/ETL03_reddit')]",
+				"[concat(variables('workspaceId'), '/notebooks/ETL04_Youtube_cm')]",
+				"[concat(variables('workspaceId'), '/notebooks/ETL05_Stock_news')]",
+				"[concat(variables('workspaceId'), '/notebooks/ETL06_economic_index')]",
+				"[concat(variables('workspaceId'), '/notebooks/AL01_TIME_SERIES_Analysis')]",
+				"[concat(variables('workspaceId'), '/notebooks/AL02_Sentiment_analysis_reddits')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse1l5xn0a-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('synapse1l5xn0a-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse1l5xn0a-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('synapse1l5xn0a-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Trigger 1')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "extract data and analysis",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-06-25T10:05:00",
+						"endTime": "2024-06-26T10:05:00",
+						"timeZone": "GMT Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/extract data and analysis')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_db')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "-- Create a Database \nCREATE DATABASE StockDB\n    COLLATE Latin1_General_100_BIN2_UTF8;\nGO;\n\nUSE StockDB;\nGO;\n\n-- Create a master key\nCREATE MASTER KEY ENCRYPTION BY PASSWORD = 'Aks10513010@'\n\n-- Create database scoped credential that use Synapse Managed Identity \nCREATE DATABASE SCOPED CREDENTIAL WorkspaceIdentity\nWITH IDENTITY = 'SHARED ACCESS SIGNATURE',\n    SECRET = 'sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupyx&se=2024-06-27T17:43:49Z&st=2024-06-25T09:43:49Z&spr=https&sig=n1zEx1f0K7J7nvZrcb2kckIFQh4sFAmm4KTzff9vlB4%3D'\nGO;\n    \n\n-- Create an External Data Source\nCREATE EXTERNAL DATA SOURCE datalake\nWITH (\n    LOCATION = 'abfss://files@datalakeoeb1dkf.dfs.core.windows.net',\n    CREDENTIAL =  WorkspaceIdentity\n);\nGO;\n\nCREATE LOGIN powerBI WITH PASSWORD = 'Aks10513010@';\nGO;\n\nCREATE USER powerBI FROM LOGIN powerBI;\nGO;\n\n-- to read data from sql view using custom credential and openrowset \nGRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[WorkspaceIdentity] TO [powerBI];\nGO;\n\nALTER ROLE db_datareader ADD MEMBER [powerBI];\nGO;\n\n\n",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_01_Stock_price')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\n\nCREATE EXTERNAL TABLE dbo.Stock_price (\n\t[Date] date,\n\t[Open] float,\n\t[High] float,\n\t[Low] float,\n\t[Close] float,\n\t[Volume] bigint,\n\t[Dividends] float,\n\t[Stock Splits] float,\n\t[symbol] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/stock_price/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Stock_price\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_02_company_report')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\n\nCREATE EXTERNAL TABLE dbo.Company_Report (\n\t[date] nvarchar(4000),\n\t[symbol] nvarchar(4000),\n\t[period] nvarchar(4000),\n\t[documenttype] nvarchar(4000),\n\t[revenues] float,\n\t[cost_of_revenue] float,\n\t[assets_current] bigint,\n\t[gross_profit] float,\n\t[net_income_loss] bigint,\n\t[earnings_per_share_basic] float,\n\t[earnings_per_share_diluted] float,\n\t[operating_income_loss] bigint,\n\t[operating_expenses] float,\n\t[research_development_expense] float,\n\t[selling_general_and_administrative_expense] float,\n\t[interest_expense] bigint,\n\t[cash_and_cash_equivalents_at_carrying_value] float,\n\t[common_stock_shares_outstanding] bigint,\n\t[long_term_debt] float,\n\t[liabilities_current] bigint,\n\t[liabilities] float\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/company_report/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Company_Report\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_03_economic_index')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Economic_index (\n\t[name] nvarchar(4000),\n\t[date] nvarchar(4000),\n\t[value] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/economic_index/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Economic_index\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_04_Sentiment_reddit')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nCREATE EXTERNAL TABLE dbo.Reddit_sentiment (\n\t[created_utc_x] datetime2(7),\n\t[symbol] nvarchar(4000),\n\t[comment] nvarchar(4000),\n\t[sentiment] float,\n\t[sentiment_category] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/reddit_sentiments/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Reddit_sentiment\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_05_Sentiment_Youtube')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Sentiment_youtube (\n\t[Date] nvarchar(4000),\n\t[symbol] nvarchar(4000),\n\t[Comment] nvarchar(4000),\n\t[sentiment] float,\n\t[sentiment_category] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/youtube/youtube_sentiments/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Sentiment_youtube\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_06_Stock_prediction')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Stock_prediction (\n\t[NVDA] real,\n\t[AMD] real,\n\t[INTC] real,\n\t[QCOM] real,\n\t[GOOG] real,\n\t[MSFT] real,\n\t[AMZN] real,\n\t[AAPL] real\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/Stock_predictions/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Stock_prediction\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Create_table_07_Stock_news')]",
+			"type": "Microsoft.Synapse/workspaces/sqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "SQL"
+				},
+				"content": {
+					"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Stock_news (\n\t[title] nvarchar(4000),\n\t[time_published] nvarchar(4000),\n\t[source] nvarchar(4000),\n\t[relevance_score] nvarchar(4000),\n\t[ticker] nvarchar(4000),\n\t[ticker_sentiment_label] nvarchar(4000),\n\t[ticker_sentiment_score] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/stock_news/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Stock_news\nGO",
+					"metadata": {
+						"language": "sql"
+					},
+					"currentConnection": {
+						"databaseName": "master",
+						"poolName": "Built-in"
+					},
+					"resultLimit": 5000
+				},
+				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AL01_TIME_SERIES_Analysis')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Analysis"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "e5be4864-0d70-4b84-b6f2-2c3db0937f6d"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"import pandas as pd\r\n",
+							"import numpy as np\r\n",
+							"from pyspark.sql.functions import *\r\n",
+							"from sklearn.preprocessing import MinMaxScaler\r\n",
+							"from tensorflow import keras\r\n",
+							"from tensorflow.keras.models import Sequential\r\n",
+							"from tensorflow.keras.layers import LSTM, Dense\r\n",
+							"import matplotlib.pyplot as plt"
+						],
+						"outputs": [],
+						"execution_count": 54
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# read file from datalake\r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_price'.format(datalake_nm)\r\n",
+							"df = spark.read.parquet(file_path )"
+						],
+						"outputs": [],
+						"execution_count": 55
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## 01 Data preprocessing"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
+							"\r\n",
+							"# Filter data for NVDA and AAPL\r\n",
+							"df = df.withColumn('close',col('close').cast('float')).withColumn('date',to_date(col('date')))\r\n",
+							"\r\n",
+							"# select data in previous 720 days\r\n",
+							"df_list = {symbol:df.filter(col(\"symbol\") == symbol).select(\"date\", \"close\").orderBy(\"date\", ascending=False).limit(720) for symbol in symbol_list}\r\n",
+							"\r\n",
+							"# Store stock price in dict \r\n",
+							"price_list = {}\r\n",
+							"for symbol,sdf in df_list.items():\r\n",
+							"    pdf = sdf.toPandas().iloc[::-1].reset_index(drop=True)\r\n",
+							"    price = pdf['close'].values\r\n",
+							"    price_list[symbol]=(price)\r\n",
+							"\r\n",
+							"# Create scaler for each ticker\r\n",
+							"scaler_dict = {}\r\n",
+							"\r\n",
+							"for symbol in symbol_list:\r\n",
+							"    scaler_dict[symbol] = MinMaxScaler()\r\n",
+							"\r\n",
+							"# Get scaled value and store in dict \r\n",
+							"scaled_value_dict = {}\r\n",
+							"\r\n",
+							"for symbol in symbol_list:\r\n",
+							"    scaled_value_dict[symbol] = scaler_dict[symbol].fit_transform(price_list[symbol].reshape(-1, 1))"
+						],
+						"outputs": [],
+						"execution_count": 56
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 02 Training model "
+						]
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Create sequences for LSTM\r\n",
+							"def create_sequences(data, seq_length):\r\n",
+							"    X, y = [], []\r\n",
+							"    for i in range(len(data) - seq_length):\r\n",
+							"        X.append(data[i:i + seq_length])\r\n",
+							"        y.append(data[i + seq_length])\r\n",
+							"    return np.array(X), np.array(y)\r\n",
+							"\r\n",
+							"# Define LSTM model function\r\n",
+							"def build_lstm_model(input_shape):\r\n",
+							"    model = Sequential([\r\n",
+							"        LSTM(50, return_sequences=True, input_shape=(input_shape)),\r\n",
+							"        Dropout(0.2),\r\n",
+							"        LSTM(50, return_sequences=False),\r\n",
+							"        Dropout(0.2),\r\n",
+							"        Dense(25),\r\n",
+							"        Dense(1)\r\n",
+							"    ])\r\n",
+							"    model.compile(optimizer='adam', loss='mean_squared_error')\r\n",
+							"    return model\r\n",
+							"\r\n",
+							"seq_length = 30  # Adjust as needed\r\n",
+							"\r\n",
+							"model_dict = {}\r\n",
+							"\r\n",
+							"for symbol,scaled_value in scaled_value_dict.items():\r\n",
+							"\r\n",
+							"    X_, y_ = create_sequences(scaled_value, seq_length)\r\n",
+							"    X_= X_.reshape((X_.shape[0], X_.shape[1], 1))\r\n",
+							"\r\n",
+							"    model = build_lstm_model(input_shape=(X_.shape[1], X_.shape[2]))\r\n",
+							"    model.fit(X_, y_, epochs=50, batch_size=32, verbose=1)\r\n",
+							"    model_dict[symbol] = model\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 57
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Function to predict next n days\r\n",
+							"def predict_next_days(model, data, scaler, seq_length, future_days):\r\n",
+							"    predicted = []\r\n",
+							"    last_sequence = data[-seq_length:]\r\n",
+							"    for _ in range(future_days):\r\n",
+							"        next_day_prediction = model.predict(last_sequence.reshape(1, seq_length, 1))[0,0]\r\n",
+							"        predicted.append(next_day_prediction)\r\n",
+							"        last_sequence = np.append(last_sequence[1:], next_day_prediction)\r\n",
+							"    return scaler.inverse_transform(np.array(predicted).reshape(-1, 1)).flatten()\r\n",
+							"\r\n",
+							"# Number of future days to predict\r\n",
+							"future_days = 14\r\n",
+							"prediction_list = {}\r\n",
+							"\r\n",
+							"for Ticker in symbol_list:\r\n",
+							"\r\n",
+							"    predictions = predict_next_days(model_dict[Ticker], scaled_value_dict[Ticker], scaler_dict[Ticker], seq_length, future_days)\r\n",
+							"    prediction_list[Ticker] = predictions\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 61
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							""
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# write data into datalake\r\n",
+							"spdf = spark.createDataFrame(pd.DataFrame(prediction_list))\r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/Stock_predictions'.format(datalake_nm)\r\n",
+							"spdf.write.parquet(file_path,mode='overwrite')"
+						],
+						"outputs": [],
+						"execution_count": 71
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AL02_Sentiment_analysis_reddits')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Analysis"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "038afc35-5a34-4992-ac9d-5fd66fd470df"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Sentiment analysis on reddit comments"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"!pip install vaderSentiment langdetect emoji nltk vaderSentiment"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.functions import udf,monotonically_increasing_id\r\n",
+							"from pyspark.sql.types import StringType, FloatType\r\n",
+							"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+							"from pyspark.sql import functions as f  \r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"import datetime\r\n",
+							"import emoji\r\n",
+							"import nltk\r\n",
+							"from langdetect import detect\r\n",
+							"from langdetect.lang_detect_exception import LangDetectException\r\n",
+							"from nltk.corpus import stopwords\r\n",
+							"from nltk.tokenize import word_tokenize\r\n",
+							"import string\r\n",
+							"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"nltk.download('punkt')\r\n",
+							"nltk.download('stopwords')"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# read file from datalake\r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/reddit_cms'.format(datalake_nm)\r\n",
+							"reddit_df = spark.read.parquet(file_path )"
+						],
+						"outputs": [],
+						"execution_count": 11
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## 1. Data preprocessing"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# remove non english word\r\n",
+							"def is_english(text):\r\n",
+							"    try:\r\n",
+							"        return detect(text) == 'en'\r\n",
+							"    except LangDetectException:\r\n",
+							"        return False\r\n",
+							"    \r\n",
+							"# change text into lowercase\r\n",
+							"def to_lowercase(text):\r\n",
+							"    return text.lower()\r\n",
+							"\r\n",
+							"# remove punctuation\r\n",
+							"def rm_punctuation(text):\r\n",
+							"    return text.translate(str.maketrans('', '', string.punctuation))\r\n",
+							"\r\n",
+							"def tokenise(text):\r\n",
+							"    return word_tokenize(text)\r\n",
+							"\r\n",
+							"# remove stop words \r\n",
+							"def remove_stopwords(tokens):\r\n",
+							"    stop_words = set(stopwords.words('english'))\r\n",
+							"    return [word for word in tokens if word not in stop_words]\r\n",
+							"\r\n",
+							"# rejoin tokens\r\n",
+							"def rejoin_tokens(tokens):\r\n",
+							"    return ' '.join(tokens)\r\n",
+							"\r\n",
+							"# main function for preprocess_text \r\n",
+							"def preprocess_text(text):\r\n",
+							"    text = to_lowercase(text)\r\n",
+							"    text = rm_punctuation(text)\r\n",
+							"    tokens = tokenise(text)\r\n",
+							"    tokens = remove_stopwords(tokens)\r\n",
+							"    return rejoin_tokens(tokens)\r\n",
+							"\r\n",
+							"def is_string(text):\r\n",
+							"    return isinstance(text, str)"
+						],
+						"outputs": [],
+						"execution_count": 12
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Filter On words counts  \r\n",
+							"reddit_df_v1 = (\r\n",
+							"    reddit_df.withColumn('wordCount', f.size(f.split(f.col('comment'), ' ')))\r\n",
+							"    .filter(f.col('wordCount')>5)\r\n",
+							"    .withColumn(\"id\", monotonically_increasing_id())\r\n",
+							"    .select('created_utc','id','comment','symbol')\r\n",
+							"    ).toPandas()\r\n",
+							"\r\n",
+							"# Remove content is not english\r\n",
+							"reddit_df_v1['is_english'] = reddit_df_v1['comment'].apply(is_english)\r\n",
+							"reddit_df_v2 = reddit_df_v1[reddit_df_v1['is_english']]\r\n",
+							"\r\n",
+							"# data preapration\r\n",
+							"reddit_df_v2['preprocessed_text'] = reddit_df_v2['comment'].apply(preprocess_text)\r\n",
+							"\r\n",
+							"# remove content is not string\r\n",
+							"\r\n",
+							"reddit_df_v2['is_string']=reddit_df_v2['preprocessed_text'].apply(is_string)\r\n",
+							"reddit_df_v3 = reddit_df_v2[reddit_df_v2['is_string']]"
+						],
+						"outputs": [],
+						"execution_count": 13
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 2. Sentiment analysis with vader"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"def analyze_sentiment(text):\r\n",
+							"    analyzer = SentimentIntensityAnalyzer()\r\n",
+							"    scores = analyzer.polarity_scores(text)\r\n",
+							"    return scores['compound']\r\n",
+							"\r\n",
+							"def categorize_sentiment(compound_score):\r\n",
+							"    if compound_score >= 0.05:\r\n",
+							"        return 'positive'\r\n",
+							"    elif compound_score <= -0.05:\r\n",
+							"        return 'negative'\r\n",
+							"    else:\r\n",
+							"        return 'neutral'"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# get sentiments\r\n",
+							"reddit_df_v3['sentiment'] = reddit_df_v3['preprocessed_text'].apply(analyze_sentiment)\r\n",
+							"reddit_df_v3['sentiment_category'] = reddit_df_v3['sentiment'].apply(categorize_sentiment)\r\n",
+							"\r\n",
+							"reddit_df_v4 = reddit_df_v3[['id','created_utc','sentiment','sentiment_category']]\r\n",
+							"\r\n",
+							"final_df = pd.merge(reddit_df_v1,reddit_df_v4, left_on='id', right_on='id', how='left')\r\n",
+							"result = final_df[['created_utc_x','symbol','comment','sentiment','sentiment_category']]"
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# write data into datalake\r\n",
+							"spdf = spark.createDataFrame(result)\r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/reddit_sentiments'.format(datalake_nm)\r\n",
+							"spdf.write.parquet(file_path,mode='overwrite')"
+						],
+						"outputs": [],
+						"execution_count": 16
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AL03_Sentiment_analysis_Youtube')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "Analysis"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "f734a02c-c399-48eb-b17d-a605f64167e6"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Sentiment analysis on Youtube"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"!pip install vaderSentiment langdetect emoji nltk vaderSentiment"
+						],
+						"outputs": [],
+						"execution_count": 7
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.functions import udf,monotonically_increasing_id\r\n",
+							"from pyspark.sql.types import StringType, FloatType\r\n",
+							"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+							"from pyspark.sql import functions as f  \r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"import datetime\r\n",
+							"import emoji\r\n",
+							"import nltk\r\n",
+							"from langdetect import detect\r\n",
+							"from langdetect.lang_detect_exception import LangDetectException\r\n",
+							"from nltk.corpus import stopwords\r\n",
+							"from nltk.tokenize import word_tokenize\r\n",
+							"import string\r\n",
+							"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 8
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"nltk.download('punkt')\r\n",
+							"nltk.download('stopwords')"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# read file \r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_cms'.format(datalake_nm)\r\n",
+							"Youtube_df = spark.read.parquet(file_path)"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Filter on words Count\r\n",
+							"Youtube_df_v1 = (\r\n",
+							"    Youtube_df.withColumn('wordCount', f.size(f.split(f.col('comment'), ' ')))\r\n",
+							"    .filter(f.col('wordCount')>5)\r\n",
+							"    .withColumn(\"id\", monotonically_increasing_id())\r\n",
+							"    .select('Date','id','Comment','symbol','VideoID')\r\n",
+							"    ).toPandas()"
+						],
+						"outputs": [],
+						"execution_count": 11
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# remove non english word\r\n",
+							"def is_english(text):\r\n",
+							"    try:\r\n",
+							"        return detect(text) == 'en'\r\n",
+							"    except LangDetectException:\r\n",
+							"        return False\r\n",
+							"    \r\n",
+							"# change text into lowercase\r\n",
+							"def to_lowercase(text):\r\n",
+							"    return text.lower()\r\n",
+							"\r\n",
+							"# remove punctuation\r\n",
+							"def rm_punctuation(text):\r\n",
+							"    return text.translate(str.maketrans('', '', string.punctuation))\r\n",
+							"\r\n",
+							"def tokenise(text):\r\n",
+							"    return word_tokenize(text)\r\n",
+							"\r\n",
+							"# remove stop words \r\n",
+							"def remove_stopwords(tokens):\r\n",
+							"    stop_words = set(stopwords.words('english'))\r\n",
+							"    return [word for word in tokens if word not in stop_words]\r\n",
+							"\r\n",
+							"# rejoin tokens\r\n",
+							"def rejoin_tokens(tokens):\r\n",
+							"    return ' '.join(tokens)\r\n",
+							"\r\n",
+							"# main function for preprocess_text \r\n",
+							"def preprocess_text(text):\r\n",
+							"    text = to_lowercase(text)\r\n",
+							"    text = rm_punctuation(text)\r\n",
+							"    tokens = tokenise(text)\r\n",
+							"    tokens = remove_stopwords(tokens)\r\n",
+							"    return rejoin_tokens(tokens)\r\n",
+							"\r\n",
+							"def is_string(text):\r\n",
+							"    return isinstance(text, str)"
+						],
+						"outputs": [],
+						"execution_count": 12
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"## 1. Data preprocessing"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Remove content is not english\r\n",
+							"Youtube_df_v1['is_english'] = Youtube_df_v1['Comment'].apply(is_english)\r\n",
+							"Youtube_df_v2 = Youtube_df_v1[Youtube_df_v1['is_english']]\r\n",
+							"\r\n",
+							"# data preapration\r\n",
+							"Youtube_df_v2['preprocessed_text'] = Youtube_df_v2['Comment'].apply(preprocess_text)\r\n",
+							"\r\n",
+							"# remove content is not string\r\n",
+							"Youtube_df_v2['is_string']=Youtube_df_v2['preprocessed_text'].apply(is_string)\r\n",
+							"Youtube_df_v3 = Youtube_df_v2[Youtube_df_v2['is_string']]"
+						],
+						"outputs": [],
+						"execution_count": 13
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 2. Sentiment analysis with vader"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"def analyze_sentiment(text):\r\n",
+							"    analyzer = SentimentIntensityAnalyzer()\r\n",
+							"    scores = analyzer.polarity_scores(text)\r\n",
+							"    return scores['compound']\r\n",
+							"\r\n",
+							"def categorize_sentiment(compound_score):\r\n",
+							"    if compound_score >= 0.05:\r\n",
+							"        return 'positive'\r\n",
+							"    elif compound_score <= -0.05:\r\n",
+							"        return 'negative'\r\n",
+							"    else:\r\n",
+							"        return 'neutral'"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"Youtube_df_v3['sentiment'] = Youtube_df_v3['preprocessed_text'].apply(analyze_sentiment)\r\n",
+							"Youtube_df_v3['sentiment_category'] = Youtube_df_v3['sentiment'].apply(categorize_sentiment)\r\n",
+							"Youtube_df_v4 = Youtube_df_v3[['id','sentiment','sentiment_category']]\r\n",
+							"final_df = pd.merge(Youtube_df_v1,Youtube_df_v4, left_on='id', right_on='id', how='left')\r\n",
+							"result = final_df[['Date','symbol','Comment','sentiment','sentiment_category']]"
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"spdf = spark.createDataFrame(result)\r\n",
+							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_sentiments'.format(datalake_nm)\r\n",
+							"spdf.write.parquet(file_path,mode='overwrite')"
+						],
+						"outputs": [],
+						"execution_count": 16
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL01_Stock_price')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "spark0625",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 1,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "1",
+						"spark.dynamicAllocation.maxExecutors": "1",
+						"spark.autotune.trackingId": "1718f554-dfde-44e5-8b13-25316ca22eeb"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/ac86b402-22ae-4573-b51d-10b49ac53875/resourceGroups/ds_prj-1l5xn0a/providers/Microsoft.Synapse/workspaces/synapse1l5xn0a/bigDataPools/spark0625",
+						"name": "spark0625",
+						"type": "Spark",
+						"endpoint": "https://synapse1l5xn0a.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/spark0625",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 01 Extract Stock price from yahoo "
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"!pip install yfinance"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"import yfinance as yf\r\n",
+							"from pyspark.sql.types import *\r\n",
+							"from pyspark.sql import functions as f\r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"import datetime\r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"def get_stock_price(symbol_list,start_date,end_date):\r\n",
+							"    historical_data = {}\r\n",
+							"    for symbol in symbol_list:\r\n",
+							"        ticker = yf.Ticker(symbol)\r\n",
+							"        data = ticker.history(start=start_date, end=end_date)\r\n",
+							"        historical_data[symbol] = data\r\n",
+							"\r\n",
+							"    return historical_data\r\n",
+							"\r\n",
+							"def transform_df(historical_data,symbol_list):\r\n",
+							"    dfs=[]\r\n",
+							"    for symbol in symbol_list:\r\n",
+							"        df = pd.DataFrame(historical_data[symbol])\r\n",
+							"        df['symbol']= symbol\r\n",
+							"        dfs.append(df)\r\n",
+							"    df = pd.concat(dfs).reset_index()\r\n",
+							"    df['Date'] = df['Date'].dt.date\r\n",
+							"    return df "
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"if __name__ == \"__main__\":\r\n",
+							"    \r\n",
+							"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL'] # ticker list\r\n",
+							"\r\n",
+							"    # set up date range\r\n",
+							"    end_date = datetime.datetime.now()\r\n",
+							"    start_date = end_date-datetime.timedelta(days=5*365)\r\n",
+							"\r\n",
+							"    # Query data \r\n",
+							"    historical_data = get_stock_price(symbol_list,start_date,end_date)\r\n",
+							"    pdf = transform_df(historical_data,symbol_list)\r\n",
+							"    sp_df = spark.createDataFrame(pdf)\r\n",
+							"    \r\n",
+							"    # Write dataframe into csv in data lake \r\n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_price'.format(datalake_nm)\r\n",
+							"    sp_df.write.parquet(file_path,mode='overwrite')\r\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 4
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL02_Company_report')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "87ed730e-323a-446f-ba6d-a8d67618315d"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"source": [
+							"# 02 Extract Company report from FMP"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.types import *\r\n",
+							"from pyspark.sql import functions as f\r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# get data from api \n",
+							"def get_financial_statement(symbol,limit,apikey):\n",
+							"    url ='https://financialmodelingprep.com/api/v3/financial-statement-full-as-reported/{0}?period=annual&limit={1}&apikey={2}'.format(symbol,limit,apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"if __name__ == \"__main__\":\r\n",
+							"    \r\n",
+							"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','fmp-key')\r\n",
+							"    # set up target ticker \r\n",
+							"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
+							"    # get data from api\r\n",
+							"    stock_data = [get_financial_statement(symbol,5,apikey) for symbol in symbol_list]\r\n",
+							"    # list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
+							"\r\n",
+							"    selected_columns=[\r\n",
+							"            \"date\",\"symbol\",\"period\",\"documenttype\",\"revenues\",\"costofrevenue\",'assetscurrent',\r\n",
+							"            \"grossprofit\",\"netincomeloss\",\"earningspersharebasic\",\"earningspersharediluted\",\"operatingincomeloss\",\r\n",
+							"            \"operatingexpenses\",\"researchanddevelopmentexpense\",\"sellinggeneralandadministrativeexpense\",\r\n",
+							"            \"interestexpense\",\"cashandcashequivalentsatcarryingvalue\",\"commonstocksharesoutstanding\",\"longtermdebt\",\r\n",
+							"            'liabilitiescurrent','liabilities'\r\n",
+							"        ]\r\n",
+							"    list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
+							"    pdfs = (pd.concat(list_ ))[[*selected_columns]]\r\n",
+							"    final_df_sp = spark.createDataFrame(pdfs)\r\n",
+							"\r\n",
+							"    # change column name \r\n",
+							"    final_df_sp = (\r\n",
+							"    final_df_sp\r\n",
+							"    .withColumnRenamed('costofrevenue','cost_of_revenue')\r\n",
+							"    .withColumnRenamed('grossprofit','gross_profit')\r\n",
+							"    .withColumnRenamed('netincomeloss','net_income_loss')\r\n",
+							"    .withColumnRenamed('netincomeloss','net_income_loss')\r\n",
+							"    .withColumnRenamed('earningspersharebasic','earnings_per_share_basic')\r\n",
+							"    .withColumnRenamed('earningspersharebasic','earnings_per_share_basic')\r\n",
+							"    .withColumnRenamed('earningspersharediluted','earnings_per_share_diluted')\r\n",
+							"    .withColumnRenamed('operatingincomeloss','operating_income_loss')\r\n",
+							"    .withColumnRenamed('operatingexpenses','operating_expenses')\r\n",
+							"    .withColumnRenamed('researchanddevelopmentexpense','research_development_expense')\r\n",
+							"    .withColumnRenamed('sellinggeneralandadministrativeexpense','selling_general_and_administrative_expense')\r\n",
+							"    .withColumnRenamed('interestexpense','interest_expense')\r\n",
+							"    .withColumnRenamed('cashandcashequivalentsatcarryingvalue','cash_and_cash_equivalents_at_carrying_value')\r\n",
+							"    .withColumnRenamed('commonstocksharesoutstanding','common_stock_shares_outstanding')\r\n",
+							"    .withColumnRenamed(\"longtermdebt\",'long_term_debt')\r\n",
+							"    .withColumnRenamed(\"liabilitiescurrent\",'liabilities_current')\r\n",
+							"    .withColumnRenamed(\"assetscurrent\",'assets_current')\r\n",
+							"    )\r\n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name\r\n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/company_report'.format(datalake_nm)\r\n",
+							"    final_df_sp.write.parquet(file_path,mode='overwrite')\r\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 20
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL03_reddit')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "spark0625",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "aa5585ea-ec20-4880-80ea-1069651b2c0e"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/ac86b402-22ae-4573-b51d-10b49ac53875/resourceGroups/ds_prj-1l5xn0a/providers/Microsoft.Synapse/workspaces/synapse1l5xn0a/bigDataPools/spark0625",
+						"name": "spark0625",
+						"type": "Spark",
+						"endpoint": "https://synapse1l5xn0a.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/spark0625",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.4",
+						"nodeCount": 3,
+						"cores": 4,
+						"memory": 28
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 03 Extract Comments from reddit "
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.types import *\n",
+							"from pyspark.sql import functions as f\n",
+							"import requests\n",
+							"import pandas as pd \n",
+							"import datetime\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# import raddit library\n",
+							"try:\n",
+							"    import praw\n",
+							"except:\n",
+							"    get_ipython().system('pip install praw')\n",
+							"    import praw\n",
+							"    \n",
+							"from praw.models import MoreComments"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# set up The Reddit Instance\n",
+							"def set_up_reddit(secret):\n",
+							"    user_agent='scraper 1.0 by /u/Adrian_10511'\n",
+							"    reddit= praw.Reddit(\n",
+							"        client_id='ZSsuFt18m9u6PnXJJwjF1A',\n",
+							"        client_secret=secret,\n",
+							"        user_agent = user_agent\n",
+							"    )\n",
+							"    return reddit\n",
+							"    \n",
+							"# set up query\n",
+							"def search_post(query,reddit,subreddit='stocks',limit_=100):\n",
+							"    search_query=query\n",
+							"    subreddit_name = subreddit\n",
+							"    results = reddit.subreddit(subreddit_name).search(search_query, limit=limit_)\n",
+							"    \n",
+							"    # change result into dataframe\n",
+							"    data=[]\n",
+							"    for submission in results:\n",
+							"        data.append({\n",
+							"            'Title': submission.title,\n",
+							"            'Score': submission.score,\n",
+							"            'ID': submission.id,\n",
+							"            'URL': submission.url,\n",
+							"            'Created': submission.created_utc,\n",
+							"            'Number of Comments': submission.num_comments\n",
+							"        })\n",
+							"    post_df = pd.DataFrame(data)\n",
+							"    post_df['Created'] = pd.to_datetime(post_df['Created'], unit='s')\n",
+							"    return post_df\n",
+							"\n",
+							"def extract_comment(df,symbol,day=60):\n",
+							"    end_date = datetime.datetime.now()\n",
+							"    start_date = end_date-datetime.timedelta(days=day)\n",
+							"    # Filter the post based on the date range\n",
+							"    filtered_df = df[(df['Created'] >= start_date) & (df['Created'] <= end_date)].sort_values(by=['Created'],ascending=False)\n",
+							"\n",
+							"    # extract df \n",
+							"    cmt_list=[]\n",
+							"    for post_id in filtered_df['ID']:\n",
+							"        for top_level_comment in reddit.submission(post_id).comments:\n",
+							"            if isinstance(top_level_comment, MoreComments):\n",
+							"                continue\n",
+							"            cmt_list.append({\n",
+							"                'created_utc':top_level_comment.created_utc,\n",
+							"                'comment':top_level_comment.body\n",
+							"                })\n",
+							"            \n",
+							"    # turn into dataframe \n",
+							"    cmt_df = pd.DataFrame(cmt_list)\n",
+							"    cmt_df['created_utc'] = pd.to_datetime(cmt_df['created_utc'], unit='s')\n",
+							"    cmt_df['symbol']= symbol\n",
+							"    sort_by_date = cmt_df.sort_values(by=['created_utc'],ascending=False).reset_index(drop=True)\n",
+							"    \n",
+							"    \n",
+							"    return sort_by_date"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"if __name__ == \"__main__\":\n",
+							"    # set up target ticker \n",
+							"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\n",
+							"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','reddit-key')\n",
+							"    reddit = set_up_reddit(apikey)\n",
+							"    list_cm  = [extract_comment(search_post(symbol,reddit),symbol) for symbol in symbol_list]\n",
+							"    all_cm_df = pd.concat(list_cm)\n",
+							"    all_cm_df['collectedAt']= datetime.datetime.now().date()\n",
+							"\n",
+							"    spark_df = spark.createDataFrame(all_cm_df)\n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/reddit_cms'.format(datalake_nm)\n",
+							"    spark_df.write.parquet(file_path,mode='overwrite')\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 5
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL04_Youtube_cm')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "e82ef9a7-4d73-49c1-bbcd-3ceb36359145"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"id": "jF_ENh3atCvf"
+						},
+						"source": [
+							"# 04 Extract comments from Youtube"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"!pip3 install google-api-python-client\n",
+							"!pip install clean-text"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from googleapiclient.discovery import build\n",
+							"import googleapiclient.errors\n",
+							"from datetime import datetime, timezone, timedelta\n",
+							"import pandas as pd\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# create connection\n",
+							"def set_up_youtube(api_service_name,api_version,DEVELOPER_KEY):\n",
+							"    youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey=DEVELOPER_KEY)\n",
+							"    return youtube \n",
+							"    \n",
+							"# serch for video list \n",
+							"def get_video_object(youtube,query,publishedAf,order_type):\n",
+							"    \n",
+							"    # request for video based on your query \n",
+							"    search_response = youtube.search().list(\n",
+							"        q=query,\n",
+							"        type='video',\n",
+							"        part='id,snippet',\n",
+							"        maxResults=30,\n",
+							"        publishedAfter= publishedAf,\n",
+							"        order=order_type\n",
+							"    ).execute()\n",
+							"\n",
+							"    #get video object from the response \n",
+							"    videos = []\n",
+							"    for search_result in search_response.get('items', []):\n",
+							"        video = {\n",
+							"                'title': search_result['snippet']['title'],\n",
+							"                'id': search_result['id']['videoId'],\n",
+							"                'url': f\"https://www.youtube.com/watch?v={search_result['id']['videoId']}\",\n",
+							"                'video_id': search_result['id']['videoId'],\n",
+							"                'CreatedAt':search_result['snippet']['publishedAt']\n",
+							"            }\n",
+							"\n",
+							"        videos.append(video)\n",
+							"    return videos\n",
+							"\n",
+							"# Function to get all comments (including replies) for a single video\n",
+							"\n",
+							"def get_comments_for_video(youtube, video_id):\n",
+							"    all_comments = []\n",
+							"    next_page_token = None\n",
+							"\n",
+							"    while True:\n",
+							"        try:\n",
+							"            comment_request = youtube.commentThreads().list(\n",
+							"                part=\"snippet\",\n",
+							"                videoId=video_id,\n",
+							"                pageToken=next_page_token,\n",
+							"                textFormat=\"plainText\",\n",
+							"                maxResults=100\n",
+							"            )\n",
+							"            comment_response = comment_request.execute()\n",
+							"\n",
+							"            for item in comment_response['items']:\n",
+							"                top_comment = item['snippet']['topLevelComment']['snippet']\n",
+							"                all_comments.append({\n",
+							"                    'Timestamp': top_comment['publishedAt'],\n",
+							"                    'Username': top_comment['authorDisplayName'],\n",
+							"                    'VideoID': video_id,\n",
+							"                    'Comment': top_comment['textDisplay'],\n",
+							"                    'Date': top_comment['updatedAt'] if 'updatedAt' in top_comment else top_comment['publishedAt']\n",
+							"                })\n",
+							"\n",
+							"            next_page_token = comment_response.get('nextPageToken')\n",
+							"            if not next_page_token:\n",
+							"                break\n",
+							"\n",
+							"        except googleapiclient.errors.HttpError as e:\n",
+							"            error_content = e.content.decode(\"utf-8\")\n",
+							"            if 'commentsDisabled' in error_content or 'disabled comments' in error_content:\n",
+							"                # Ignore videos with disabled comments\n",
+							"                print(f\"Comments are disabled for the video with ID {video_id}. Ignoring this video.\")\n",
+							"                break  # Exit the loop\n",
+							"            else:\n",
+							"                print(f\"An error occurred: {e}\")\n",
+							"                break  # Exit the loop\n",
+							"    \n",
+							"    return all_comments"
+						],
+						"outputs": [],
+						"execution_count": 4
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"if __name__ == '__main__':\n",
+							"    # set up youtube search engine\n",
+							"    api_service_name = \"youtube\"\n",
+							"    api_version = \"v3\"\n",
+							"    DEVELOPER_KEY= mssparkutils.credentials.getSecret('synapse-key12345','youtube-key')\n",
+							"    \n",
+							"    youtube = set_up_youtube(api_service_name,api_version,DEVELOPER_KEY)\n",
+							"    \n",
+							"    # set up date range \n",
+							"    bf_30 = datetime.now(timezone.utc)-timedelta(days=60)\n",
+							"    iso_format_with_z = bf_30 .isoformat().replace('+00:00', 'Z')\n",
+							"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\n",
+							"    \n",
+							"    # collect comments\n",
+							"    all_stocks_cm = []\n",
+							"    for symbol in symbol_list:\n",
+							"        video_list = get_video_object(youtube,f'{symbol} stock',iso_format_with_z,order_type='viewCount')\n",
+							"        video_ids= [i['video_id'] for i in video_list]\n",
+							"        \n",
+							"        all_comments=[]\n",
+							"        for video_id in video_ids:\n",
+							"            video_comments = get_comments_for_video(youtube, video_id)\n",
+							"            all_comments.extend(video_comments)\n",
+							"            \n",
+							"        comments_df = pd.DataFrame(all_comments)\n",
+							"        comments_df['resource'] = 'Youtube'\n",
+							"        comments_df['symbol'] = symbol\n",
+							"        all_stocks_cm.append(comments_df)\n",
+							"        \n",
+							"    df = pd.concat(all_stocks_cm)\n",
+							"    df['collectedAt'] = datetime.now().date()\n",
+							"\n",
+							"    # read into spark dataframe and write into csv \n",
+							"    spark_df = spark.createDataFrame(df)\n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_cms'.format(datalake_nm)\n",
+							"    spark_df.write.parquet(file_path,mode='overwrite')\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 5
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL05_Stock_news')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "8edbe3f0-b825-4e23-a602-0be60be944fa"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 05 Extract stock news from Alphavantage"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.types import *\r\n",
+							"from pyspark.sql import functions as f\r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"from datetime import datetime, timedelta\r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"# get data from api \n",
+							"def get_stock_data(symbol,time_from,data_size,apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&symbol={0}&time_from={1}&limit={2}&apikey={3}'.format(symbol,time_from,data_size,apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data\n",
+							"\n",
+							"def transform_pdf(news_list):\n",
+							"    dfs=[]\n",
+							"    for news in news_list:\n",
+							"        df = pd.DataFrame.from_dict(news['feed'])\n",
+							"        dfs.append(df)\n",
+							"    pdf = pd.concat(dfs).drop_duplicates(subset=['title'])\n",
+							"    pdf_v1 = pdf[['title','time_published','source','ticker_sentiment']]\n",
+							"    return pdf_v1"
+						],
+						"outputs": [],
+						"execution_count": 2
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"if __name__ == \"__main__\":\n",
+							"    # get apikey from key-vault \n",
+							"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','alphavantage-key')\n",
+							"    data_size=200\n",
+							"    # set up target ticker \n",
+							"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\n",
+							"    # Get the current datetime\n",
+							"    now = datetime.now()\n",
+							"\n",
+							"    # 30 days to the current datetime\n",
+							"    future_date = now - timedelta(days=30)\n",
+							"\n",
+							"    # Format both datetime objects as 'YYYYMMDDTHHMM'\n",
+							"    formatted_now = now.strftime('%Y%m%dT%H%M')\n",
+							"    time_from = future_date.strftime('%Y%m%dT%H%M')\n",
+							"    # get data from api\n",
+							"    stock_news = [get_stock_data(symbol,time_from,data_size,apikey) for symbol in symbol_list]\n",
+							"    pdf = transform_pdf(stock_news)\n",
+							"    sp_df = spark.createDataFrame(pdf).filter(f.size(f.col('ticker_sentiment')) > 0)\n",
+							"\n",
+							"    sp_df_v1 = (\n",
+							"        sp_df.select('title','time_published','source',f.explode('ticker_sentiment').alias(\"ticker_sentiment\"))\n",
+							"        .select('title','time_published','source','ticker_sentiment.*')\n",
+							"        .filter(f.col('ticker').isin(symbol_list))\n",
+							"                    )\n",
+							"                    \n",
+							"    print('load data into filepath')\n",
+							"    \n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_news'.format(datalake_nm) \n",
+							"    sp_df_v1.write.parquet(file_path,mode='overwrite')\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 3
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ETL06_economic_index')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "ETL"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "36cd2bab-6e9e-4f99-aae5-d64b44537d1f"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# 06 Extract economic index from alphavantage"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.types import *\r\n",
+							"from pyspark.sql import functions as f\r\n",
+							"import requests\r\n",
+							"import pandas as pd \r\n",
+							"from datetime import datetime, timedelta\r\n",
+							"from notebookutils import mssparkutils"
+						],
+						"outputs": [],
+						"execution_count": 1
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"# get data from api \n",
+							"def get_GDP_PC(apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=REAL_GDP_PER_CAPITA&apikey={0}'.format(apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data\n",
+							"\n",
+							"def get_FDI(apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=FEDERAL_FUNDS_RATE&interval=monthly&apikey={0}'.format(apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data\n",
+							"\n",
+							"def get_CPI(apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=CPI&interval=monthly&apikey={0}'.format(apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data\n",
+							"\n",
+							"def get_INF(apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=INFLATION&interval=monthly&apikey={0}'.format(apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data\n",
+							"\n",
+							"def get_UNEM(apikey):\n",
+							"    url = 'https://www.alphavantage.co/query?function=UNEMPLOYMENT&apikey={0}'.format(apikey)\n",
+							"    r = requests.get(url)\n",
+							"    data = r.json()\n",
+							"    return data    \n",
+							"\n",
+							"def transform_spdf(data):\n",
+							"    pdf = pd.DataFrame(data)\n",
+							"    Spdf = spark.createDataFrame(pdf[['name','data']])\n",
+							"    Spdf = (\n",
+							"    Spdf.select('name','data')\n",
+							"    .withColumn('date',Spdf.data.getItem(\"date\"))\n",
+							"    .withColumn('value',Spdf.data.getItem('value'))\n",
+							"    .select(\"name\",'date','value')\n",
+							"    ) \n",
+							"    return Spdf "
+						],
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"if __name__ == \"__main__\":\n",
+							"    # get apikey from key-vault \n",
+							"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','alphavantage-key')\n",
+							"\n",
+							"    # get data from api\n",
+							"    GDP = get_GDP_PC(apikey)\n",
+							"    FDI = get_FDI(apikey)\n",
+							"    CPI = get_CPI(apikey)\n",
+							"    INF = get_INF(apikey)\n",
+							"    UNEM = get_UNEM(apikey)\n",
+							"    \n",
+							"    GDP_SP = transform_spdf(GDP)\n",
+							"    GDP_FDI = transform_spdf(FDI)\n",
+							"    GDP_CPI = transform_spdf(CPI)\n",
+							"    GDP_INF = transform_spdf(INF)\n",
+							"    GDP_UNEM = transform_spdf(UNEM)\n",
+							"\n",
+							"    all_= GDP_SP.union(GDP_FDI).union(GDP_CPI).union(GDP_INF).union(GDP_UNEM)\n",
+							"        \n",
+							"    print('load data into filepath')\n",
+							"    \n",
+							"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
+							"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/economic_index'.format(datalake_nm) \n",
+							"    all_.write.parquet(file_path,mode='overwrite')\n",
+							"    spark.stop()"
+						],
+						"outputs": [],
+						"execution_count": 3
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/spark0625')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": false,
+					"maxNodeCount": 10,
+					"minNodeCount": 3
+				},
+				"nodeCount": 3,
+				"nodeSize": "Small",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.4",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus2"
+		}
+	]
+}
