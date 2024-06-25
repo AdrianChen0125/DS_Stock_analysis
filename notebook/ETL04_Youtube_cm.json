@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6565cd55-7463-47d9-832f-abc03fb7a94b"
+				"spark.autotune.trackingId": "808ddee3-66bc-4d41-8efd-4189dc9f5b51"
 			}
 		},
 		"metadata": {
@@ -152,7 +152,7 @@
 					"    youtube = set_up_youtube(api_service_name,api_version,DEVELOPER_KEY)\n",
 					"    \n",
 					"    # set up date range \n",
-					"    bf_30 = datetime.now(timezone.utc)-timedelta(days=30)\n",
+					"    bf_30 = datetime.now(timezone.utc)-timedelta(days=60)\n",
 					"    iso_format_with_z = bf_30 .isoformat().replace('+00:00', 'Z')\n",
 					"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\n",
 					"    \n",
