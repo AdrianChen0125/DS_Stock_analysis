@@ -6,6 +6,10 @@
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "spark0625",
+			"type": "BigDataPoolReference"
+		},
 		"sessionProperties": {
 			"driverMemory": "28g",
 			"driverCores": 4,
@@ -16,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b65d25b0-321d-4311-92fa-10d88b2dc172"
+				"spark.autotune.trackingId": "73a5429e-b40d-4d90-aad2-bb5aa9fc140f"
 			}
 		},
 		"metadata": {
@@ -28,6 +32,21 @@
 			},
 			"language_info": {
 				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/ac86b402-22ae-4573-b51d-10b49ac53875/resourceGroups/ds_prj-l2zqv6g/providers/Microsoft.Synapse/workspaces/synapsel2zqv6g/bigDataPools/spark0625",
+				"name": "spark0625",
+				"type": "Spark",
+				"endpoint": "https://synapsel2zqv6g.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/spark0625",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -105,7 +124,7 @@
 					"    post_df['Created'] = pd.to_datetime(post_df['Created'], unit='s')\n",
 					"    return post_df\n",
 					"\n",
-					"def extract_comment(df,symbol,day=30):\n",
+					"def extract_comment(df,symbol,day=60):\n",
 					"    end_date = datetime.datetime.now()\n",
 					"    start_date = end_date-datetime.timedelta(days=day)\n",
 					"    # Filter the post based on the date range\n",
