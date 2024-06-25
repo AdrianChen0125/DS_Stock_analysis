@@ -2,23 +2,22 @@
 	"name": "daily_triger",
 	"properties": {
 		"annotations": [],
-		"runtimeState": "Started",
-		"pipelines": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Pipeline 1",
+					"type": "PipelineReference"
+				}
+			}
+		],
 		"type": "ScheduleTrigger",
 		"typeProperties": {
 			"recurrence": {
 				"frequency": "Day",
 				"interval": 1,
 				"startTime": "2024-06-25T08:32:00",
-				"timeZone": "GMT Standard Time",
-				"schedule": {
-					"minutes": [
-						40
-					],
-					"hours": [
-						9
-					]
-				}
+				"timeZone": "GMT Standard Time"
 			}
 		}
 	}
