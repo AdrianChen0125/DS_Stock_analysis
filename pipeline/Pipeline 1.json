@@ -21,7 +21,10 @@
 					},
 					"parameters": {
 						"undefined": {
-							"value": ""
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
 						}
 					},
 					"snapshot": true,
