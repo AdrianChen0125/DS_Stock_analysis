@@ -1,0 +1,135 @@
+{
+	"name": "ETL02_Company_report",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "c5bb5968-3263-4dff-9d89-6a78cf044cdd"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"source": [
+					"# 02 Extract Company report from FMP"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.types import *\r\n",
+					"from pyspark.sql import functions as f\r\n",
+					"import requests\r\n",
+					"import pandas as pd \r\n",
+					"from notebookutils import mssparkutils"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# get data from api \n",
+					"def get_financial_statement(symbol,limit,apikey):\n",
+					"    url ='https://financialmodelingprep.com/api/v3/financial-statement-full-as-reported/{0}?period=annual&limit={1}&apikey={2}'.format(symbol,limit,apikey)\n",
+					"    r = requests.get(url)\n",
+					"    data = r.json()\n",
+					"    return data"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"if __name__ == \"__main__\":\r\n",
+					"    \r\n",
+					"    # apikey = mssparkutils.credentials.getSecret('synapse-key12345','fmp-key')\r\n",
+					"    # # set up target ticker \r\n",
+					"    # symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
+					"    # # get data from api\r\n",
+					"    # stock_data = [get_financial_statement(symbol,5,apikey) for symbol in symbol_list]\r\n",
+					"    # # list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
+					"\r\n",
+					"    selected_columns=[\r\n",
+					"            \"date\",\"symbol\",\"period\",\"documenttype\",\"revenues\",\"costofrevenue\",'assetscurrent',\r\n",
+					"            \"grossprofit\",\"netincomeloss\",\"earningspersharebasic\",\"earningspersharediluted\",\"operatingincomeloss\",\r\n",
+					"            \"operatingexpenses\",\"researchanddevelopmentexpense\",\"sellinggeneralandadministrativeexpense\",\r\n",
+					"            \"interestexpense\",\"cashandcashequivalentsatcarryingvalue\",\"commonstocksharesoutstanding\",\"longtermdebt\",\r\n",
+					"            'liabilitiescurrent','liabilities'\r\n",
+					"        ]\r\n",
+					"    list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
+					"    pdfs = (pd.concat(list_ ))[[*selected_columns]]\r\n",
+					"    final_df_sp = spark.createDataFrame(pdfs)\r\n",
+					"\r\n",
+					"    # change column name \r\n",
+					"    final_df_sp = (\r\n",
+					"    final_df_sp\r\n",
+					"    .withColumnRenamed('costofrevenue','cost_of_revenue')\r\n",
+					"    .withColumnRenamed('grossprofit','gross_profit')\r\n",
+					"    .withColumnRenamed('netincomeloss','net_income_loss')\r\n",
+					"    .withColumnRenamed('netincomeloss','net_income_loss')\r\n",
+					"    .withColumnRenamed('earningspersharebasic','earnings_per_share_basic')\r\n",
+					"    .withColumnRenamed('earningspersharebasic','earnings_per_share_basic')\r\n",
+					"    .withColumnRenamed('earningspersharediluted','earnings_per_share_diluted')\r\n",
+					"    .withColumnRenamed('operatingincomeloss','operating_income_loss')\r\n",
+					"    .withColumnRenamed('operatingexpenses','operating_expenses')\r\n",
+					"    .withColumnRenamed('researchanddevelopmentexpense','research_development_expense')\r\n",
+					"    .withColumnRenamed('sellinggeneralandadministrativeexpense','selling_general_and_administrative_expense')\r\n",
+					"    .withColumnRenamed('interestexpense','interest_expense')\r\n",
+					"    .withColumnRenamed('cashandcashequivalentsatcarryingvalue','cash_and_cash_equivalents_at_carrying_value')\r\n",
+					"    .withColumnRenamed('commonstocksharesoutstanding','common_stock_shares_outstanding')\r\n",
+					"    .withColumnRenamed(\"longtermdebt\",'long_term_debt')\r\n",
+					"    .withColumnRenamed(\"liabilitiescurrent\",'liabilities_current')\r\n",
+					"    .withColumnRenamed(\"assetscurrent\",'assets_current')\r\n",
+					"    )\r\n",
+					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name\r\n",
+					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/company_report'.format(datalake_nm)\r\n",
+					"    final_df_sp.write.parquet(file_path,mode='overwrite')"
+				],
+				"execution_count": 20
+			}
+		]
+	}
+}

@@ -1,0 +1,128 @@
+{
+	"name": "ETL05_Stock_news",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "aeea2407-6a00-40d9-b385-41ed65061d65"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 05 Extract stock news from Alphavantage"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.types import *\r\n",
+					"from pyspark.sql import functions as f\r\n",
+					"import requests\r\n",
+					"import pandas as pd \r\n",
+					"from datetime import datetime, timedelta\r\n",
+					"from notebookutils import mssparkutils"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# get data from api \n",
+					"def get_stock_data(symbol,time_from,data_size,apikey):\n",
+					"    url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&symbol={0}&time_from={1}&limit={2}&apikey={3}'.format(symbol,time_from,data_size,apikey)\n",
+					"    r = requests.get(url)\n",
+					"    data = r.json()\n",
+					"    return data\n",
+					"\n",
+					"def transform_pdf(news_list):\n",
+					"    dfs=[]\n",
+					"    for news in news_list:\n",
+					"        df = pd.DataFrame.from_dict(news['feed'])\n",
+					"        dfs.append(df)\n",
+					"    pdf = pd.concat(dfs).drop_duplicates(subset=['title'])\n",
+					"    pdf_v1 = pdf[['title','time_published','source','ticker_sentiment']]\n",
+					"    return pdf_v1"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"if __name__ == \"__main__\":\n",
+					"    # get apikey from key-vault \n",
+					"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','alphavantage-key')\n",
+					"    data_size=200\n",
+					"    # set up target ticker \n",
+					"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\n",
+					"    # Get the current datetime\n",
+					"    now = datetime.now()\n",
+					"\n",
+					"    # 30 days to the current datetime\n",
+					"    future_date = now - timedelta(days=30)\n",
+					"\n",
+					"    # Format both datetime objects as 'YYYYMMDDTHHMM'\n",
+					"    formatted_now = now.strftime('%Y%m%dT%H%M')\n",
+					"    time_from = future_date.strftime('%Y%m%dT%H%M')\n",
+					"    # get data from api\n",
+					"    stock_news = [get_stock_data(symbol,time_from,data_size,apikey) for symbol in symbol_list]\n",
+					"    pdf = transform_pdf(stock_news)\n",
+					"    sp_df = spark.createDataFrame(pdf).filter(f.size(f.col('ticker_sentiment')) > 0)\n",
+					"\n",
+					"    sp_df_v1 = (\n",
+					"        sp_df.select('title','time_published','source',f.explode('ticker_sentiment').alias(\"ticker_sentiment\"))\n",
+					"        .select('title','time_published','source','ticker_sentiment.*')\n",
+					"        .filter(f.col('ticker').isin(symbol_list))\n",
+					"                    )\n",
+					"                    \n",
+					"    print('load data into filepath')\n",
+					"    \n",
+					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
+					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_news'.format(datalake_nm) \n",
+					"    sp_df_v1.write.parquet(file_path,mode='overwrite')"
+				],
+				"execution_count": 3
+			}
+		]
+	}
+}
