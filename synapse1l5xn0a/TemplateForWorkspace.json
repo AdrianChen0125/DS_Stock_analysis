@@ -742,7 +742,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "e5be4864-0d70-4b84-b6f2-2c3db0937f6d"
+						"spark.autotune.trackingId": "378890a2-f494-4ec6-9feb-bb0bbb6eca2d"
 					}
 				},
 				"metadata": {
@@ -998,7 +998,8 @@
 							"spdf = spark.createDataFrame(pd.DataFrame(prediction_list))\r\n",
 							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/Stock_predictions'.format(datalake_nm)\r\n",
-							"spdf.write.parquet(file_path,mode='overwrite')"
+							"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+							"spark.stop()"
 						],
 						"outputs": [],
 						"execution_count": 71
@@ -1027,7 +1028,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "038afc35-5a34-4992-ac9d-5fd66fd470df"
+						"spark.autotune.trackingId": "86e50607-3538-4c50-949b-7ababa05c5ab"
 					}
 				},
 				"metadata": {
@@ -1332,7 +1333,8 @@
 							"spdf = spark.createDataFrame(result)\r\n",
 							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/reddit_sentiments'.format(datalake_nm)\r\n",
-							"spdf.write.parquet(file_path,mode='overwrite')"
+							"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+							"spark.stop()"
 						],
 						"outputs": [],
 						"execution_count": 16
@@ -1361,7 +1363,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f734a02c-c399-48eb-b17d-a605f64167e6"
+						"spark.autotune.trackingId": "be0e692f-c097-49d5-9627-c222dc7b1a9c"
 					}
 				},
 				"metadata": {
@@ -1411,6 +1413,7 @@
 					},
 					{
 						"cell_type": "code",
+						"metadata": {},
 						"source": [
 							"from pyspark.sql.functions import udf,monotonically_increasing_id\r\n",
 							"from pyspark.sql.types import StringType, FloatType\r\n",
@@ -1678,7 +1681,8 @@
 							"spdf = spark.createDataFrame(result)\r\n",
 							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 							"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_sentiments'.format(datalake_nm)\r\n",
-							"spdf.write.parquet(file_path,mode='overwrite')"
+							"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+							"spark.stop()"
 						],
 						"outputs": [],
 						"execution_count": 16
@@ -1711,7 +1715,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "1",
 						"spark.dynamicAllocation.maxExecutors": "1",
-						"spark.autotune.trackingId": "1718f554-dfde-44e5-8b13-25316ca22eeb"
+						"spark.autotune.trackingId": "fbf0f950-4f1a-4994-8818-47185add6aac"
 					}
 				},
 				"metadata": {
@@ -2545,7 +2549,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "36cd2bab-6e9e-4f99-aae5-d64b44537d1f"
+						"spark.autotune.trackingId": "4784d7e3-fadc-43cb-abab-6c6227da5438"
 					}
 				},
 				"metadata": {
@@ -2600,7 +2604,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"# get data from api \n",
 							"def get_GDP_PC(apikey):\n",
@@ -2649,7 +2652,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"if __name__ == \"__main__\":\n",
 							"    # get apikey from key-vault \n",
