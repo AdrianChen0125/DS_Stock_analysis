@@ -1,0 +1,25 @@
+{
+	"name": "Trigger 1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "extract data and analysis",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2024-06-25T10:05:00",
+				"endTime": "2024-06-26T10:05:00",
+				"timeZone": "GMT Standard Time"
+			}
+		}
+	}
+}
