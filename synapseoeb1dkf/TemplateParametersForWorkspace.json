@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "synapseoeb1dkf"
+		},
+		"synapsel2zqv6g-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsel2zqv6g.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"synapseoeb1dkf-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapseoeb1dkf.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"synapsel2zqv6g-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://datalakel2zqv6g.dfs.core.windows.net"
+		},
+		"synapseoeb1dkf-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://datalakeoeb1dkf.dfs.core.windows.net"
+		}
+	}
+}
