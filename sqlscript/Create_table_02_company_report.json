@@ -1,0 +1,20 @@
+{
+	"name": "Create_table_02_company_report",
+	"properties": {
+		"folder": {
+			"name": "SQL"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\n\nCREATE EXTERNAL TABLE dbo.Company_Report (\n\t[date] nvarchar(4000),\n\t[symbol] nvarchar(4000),\n\t[period] nvarchar(4000),\n\t[documenttype] nvarchar(4000),\n\t[revenues] float,\n\t[cost_of_revenue] float,\n\t[assets_current] bigint,\n\t[gross_profit] float,\n\t[net_income_loss] bigint,\n\t[earnings_per_share_basic] float,\n\t[earnings_per_share_diluted] float,\n\t[operating_income_loss] bigint,\n\t[operating_expenses] float,\n\t[research_development_expense] float,\n\t[selling_general_and_administrative_expense] float,\n\t[interest_expense] bigint,\n\t[cash_and_cash_equivalents_at_carrying_value] float,\n\t[common_stock_shares_outstanding] bigint,\n\t[long_term_debt] float,\n\t[liabilities_current] bigint,\n\t[liabilities] float\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/company_report/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Company_Report\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

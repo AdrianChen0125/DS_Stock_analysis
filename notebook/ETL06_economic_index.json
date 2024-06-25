@@ -1,6 +1,9 @@
 {
 	"name": "ETL06_economic_index",
 	"properties": {
+		"folder": {
+			"name": "ETL"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"sessionProperties": {
@@ -13,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "83c1fc13-54a1-498b-9da1-608ba37f68df"
+				"spark.autotune.trackingId": "1c44dedc-0881-4e57-8e50-f85b052cfc64"
 			}
 		},
 		"metadata": {

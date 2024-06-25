@@ -1,6 +1,9 @@
 {
 	"name": "ETL05_Stock_news",
 	"properties": {
+		"folder": {
+			"name": "ETL"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"sessionProperties": {

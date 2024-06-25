@@ -1,6 +1,9 @@
 {
 	"name": "ETL02_Company_report",
 	"properties": {
+		"folder": {
+			"name": "ETL"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"sessionProperties": {

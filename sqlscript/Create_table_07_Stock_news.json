@@ -1,0 +1,20 @@
+{
+	"name": "Create_table_07_Stock_news",
+	"properties": {
+		"folder": {
+			"name": "SQL"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Stock_news (\n\t[title] nvarchar(4000),\n\t[time_published] nvarchar(4000),\n\t[source] nvarchar(4000),\n\t[relevance_score] nvarchar(4000),\n\t[ticker] nvarchar(4000),\n\t[ticker_sentiment_label] nvarchar(4000),\n\t[ticker_sentiment_score] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/stock_news/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Stock_news\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

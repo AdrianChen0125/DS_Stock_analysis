@@ -1,6 +1,9 @@
 {
 	"name": "ETL03_reddit",
 	"properties": {
+		"folder": {
+			"name": "ETL"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"sessionProperties": {

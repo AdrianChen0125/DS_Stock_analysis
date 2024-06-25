@@ -1,0 +1,20 @@
+{
+	"name": "Create_table_03_economic_index",
+	"properties": {
+		"folder": {
+			"name": "SQL"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Economic_index (\n\t[name] nvarchar(4000),\n\t[date] nvarchar(4000),\n\t[value] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/economic_index/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Economic_index\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

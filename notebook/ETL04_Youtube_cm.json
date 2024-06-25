@@ -1,6 +1,9 @@
 {
 	"name": "ETL04_Youtube_cm",
 	"properties": {
+		"folder": {
+			"name": "ETL"
+		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
 		"sessionProperties": {
@@ -13,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "9d057766-d6b8-4932-8b52-fb0eaff6001d"
+				"spark.autotune.trackingId": "6565cd55-7463-47d9-832f-abc03fb7a94b"
 			}
 		},
 		"metadata": {

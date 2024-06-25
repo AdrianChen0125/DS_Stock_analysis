@@ -1,0 +1,20 @@
+{
+	"name": "Create_table_06_Stock_prediction",
+	"properties": {
+		"folder": {
+			"name": "SQL"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\n\nCREATE EXTERNAL TABLE dbo.Stock_prediction (\n\t[NVDA] real,\n\t[AMD] real,\n\t[INTC] real,\n\t[QCOM] real,\n\t[GOOG] real,\n\t[MSFT] real,\n\t[AMZN] real,\n\t[AAPL] real\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/Stock_predictions/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Stock_prediction\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

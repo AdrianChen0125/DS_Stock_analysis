@@ -1,0 +1,333 @@
+{
+	"name": "AL03_Sentiment_analysis_Youtube",
+	"properties": {
+		"folder": {
+			"name": "Analysis"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "f734a02c-c399-48eb-b17d-a605f64167e6"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Sentiment analysis on Youtube"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"!pip install vaderSentiment langdetect emoji nltk vaderSentiment"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.functions import udf,monotonically_increasing_id\r\n",
+					"from pyspark.sql.types import StringType, FloatType\r\n",
+					"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+					"from pyspark.sql import functions as f  \r\n",
+					"import requests\r\n",
+					"import pandas as pd \r\n",
+					"import datetime\r\n",
+					"import emoji\r\n",
+					"import nltk\r\n",
+					"from langdetect import detect\r\n",
+					"from langdetect.lang_detect_exception import LangDetectException\r\n",
+					"from nltk.corpus import stopwords\r\n",
+					"from nltk.tokenize import word_tokenize\r\n",
+					"import string\r\n",
+					"from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer\r\n",
+					"from notebookutils import mssparkutils"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"nltk.download('punkt')\r\n",
+					"nltk.download('stopwords')"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# read file \r\n",
+					"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+					"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_cms'.format(datalake_nm)\r\n",
+					"Youtube_df = spark.read.parquet(file_path)"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Filter on words Count\r\n",
+					"Youtube_df_v1 = (\r\n",
+					"    Youtube_df.withColumn('wordCount', f.size(f.split(f.col('comment'), ' ')))\r\n",
+					"    .filter(f.col('wordCount')>5)\r\n",
+					"    .withColumn(\"id\", monotonically_increasing_id())\r\n",
+					"    .select('Date','id','Comment','symbol','VideoID')\r\n",
+					"    ).toPandas()"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# remove non english word\r\n",
+					"def is_english(text):\r\n",
+					"    try:\r\n",
+					"        return detect(text) == 'en'\r\n",
+					"    except LangDetectException:\r\n",
+					"        return False\r\n",
+					"    \r\n",
+					"# change text into lowercase\r\n",
+					"def to_lowercase(text):\r\n",
+					"    return text.lower()\r\n",
+					"\r\n",
+					"# remove punctuation\r\n",
+					"def rm_punctuation(text):\r\n",
+					"    return text.translate(str.maketrans('', '', string.punctuation))\r\n",
+					"\r\n",
+					"def tokenise(text):\r\n",
+					"    return word_tokenize(text)\r\n",
+					"\r\n",
+					"# remove stop words \r\n",
+					"def remove_stopwords(tokens):\r\n",
+					"    stop_words = set(stopwords.words('english'))\r\n",
+					"    return [word for word in tokens if word not in stop_words]\r\n",
+					"\r\n",
+					"# rejoin tokens\r\n",
+					"def rejoin_tokens(tokens):\r\n",
+					"    return ' '.join(tokens)\r\n",
+					"\r\n",
+					"# main function for preprocess_text \r\n",
+					"def preprocess_text(text):\r\n",
+					"    text = to_lowercase(text)\r\n",
+					"    text = rm_punctuation(text)\r\n",
+					"    tokens = tokenise(text)\r\n",
+					"    tokens = remove_stopwords(tokens)\r\n",
+					"    return rejoin_tokens(tokens)\r\n",
+					"\r\n",
+					"def is_string(text):\r\n",
+					"    return isinstance(text, str)"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## 1. Data preprocessing"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Remove content is not english\r\n",
+					"Youtube_df_v1['is_english'] = Youtube_df_v1['Comment'].apply(is_english)\r\n",
+					"Youtube_df_v2 = Youtube_df_v1[Youtube_df_v1['is_english']]\r\n",
+					"\r\n",
+					"# data preapration\r\n",
+					"Youtube_df_v2['preprocessed_text'] = Youtube_df_v2['Comment'].apply(preprocess_text)\r\n",
+					"\r\n",
+					"# remove content is not string\r\n",
+					"Youtube_df_v2['is_string']=Youtube_df_v2['preprocessed_text'].apply(is_string)\r\n",
+					"Youtube_df_v3 = Youtube_df_v2[Youtube_df_v2['is_string']]"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# 2. Sentiment analysis with vader"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def analyze_sentiment(text):\r\n",
+					"    analyzer = SentimentIntensityAnalyzer()\r\n",
+					"    scores = analyzer.polarity_scores(text)\r\n",
+					"    return scores['compound']\r\n",
+					"\r\n",
+					"def categorize_sentiment(compound_score):\r\n",
+					"    if compound_score >= 0.05:\r\n",
+					"        return 'positive'\r\n",
+					"    elif compound_score <= -0.05:\r\n",
+					"        return 'negative'\r\n",
+					"    else:\r\n",
+					"        return 'neutral'"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Youtube_df_v3['sentiment'] = Youtube_df_v3['preprocessed_text'].apply(analyze_sentiment)\r\n",
+					"Youtube_df_v3['sentiment_category'] = Youtube_df_v3['sentiment'].apply(categorize_sentiment)\r\n",
+					"Youtube_df_v4 = Youtube_df_v3[['id','sentiment','sentiment_category']]\r\n",
+					"final_df = pd.merge(Youtube_df_v1,Youtube_df_v4, left_on='id', right_on='id', how='left')\r\n",
+					"result = final_df[['Date','symbol','Comment','sentiment','sentiment_category']]"
+				],
+				"execution_count": 15
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"spdf = spark.createDataFrame(result)\r\n",
+					"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
+					"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_sentiments'.format(datalake_nm)\r\n",
+					"spdf.write.parquet(file_path,mode='overwrite')"
+				],
+				"execution_count": 16
+			}
+		]
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"name": "Create_table_04_Sentiment_reddit",
+	"properties": {
+		"folder": {
+			"name": "SQL"
+		},
+		"content": {
+			"query": "IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') \n\tCREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] \n\tWITH ( FORMAT_TYPE = PARQUET)\nGO\n\nCREATE EXTERNAL TABLE dbo.Reddit_sentiment (\n\t[created_utc_x] datetime2(7),\n\t[symbol] nvarchar(4000),\n\t[comment] nvarchar(4000),\n\t[sentiment] float,\n\t[sentiment_category] nvarchar(4000)\n\t)\n\tWITH (\n\tLOCATION = 'synapse/workspaces/data/reddit_sentiments/**',\n\tDATA_SOURCE = datalake,\n\tFILE_FORMAT = [SynapseParquetFormat]\n\t)\nGO\n\n\nSELECT TOP 100 * FROM dbo.Reddit_sentiment\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
