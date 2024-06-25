@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c5bb5968-3263-4dff-9d89-6a78cf044cdd"
+				"spark.autotune.trackingId": "ba4dde5e-b0c6-47ab-b8aa-812b09edd8de"
 			}
 		},
 		"metadata": {
@@ -88,12 +88,12 @@
 				"source": [
 					"if __name__ == \"__main__\":\r\n",
 					"    \r\n",
-					"    # apikey = mssparkutils.credentials.getSecret('synapse-key12345','fmp-key')\r\n",
-					"    # # set up target ticker \r\n",
-					"    # symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
-					"    # # get data from api\r\n",
-					"    # stock_data = [get_financial_statement(symbol,5,apikey) for symbol in symbol_list]\r\n",
-					"    # # list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
+					"    apikey = mssparkutils.credentials.getSecret('synapse-key12345','fmp-key')\r\n",
+					"    # set up target ticker \r\n",
+					"    symbol_list=['NVDA','AMD','INTC','QCOM','GOOG','MSFT','AMZN','AAPL']\r\n",
+					"    # get data from api\r\n",
+					"    stock_data = [get_financial_statement(symbol,5,apikey) for symbol in symbol_list]\r\n",
+					"    # list_ = [pd.DataFrame(data) for data in stock_data]\r\n",
 					"\r\n",
 					"    selected_columns=[\r\n",
 					"            \"date\",\"symbol\",\"period\",\"documenttype\",\"revenues\",\"costofrevenue\",'assetscurrent',\r\n",
