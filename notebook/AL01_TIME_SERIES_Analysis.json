@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e5be4864-0d70-4b84-b6f2-2c3db0937f6d"
+				"spark.autotune.trackingId": "378890a2-f494-4ec6-9feb-bb0bbb6eca2d"
 			}
 		},
 		"metadata": {
@@ -267,7 +267,8 @@
 					"spdf = spark.createDataFrame(pd.DataFrame(prediction_list))\r\n",
 					"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 					"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/Stock_predictions'.format(datalake_nm)\r\n",
-					"spdf.write.parquet(file_path,mode='overwrite')"
+					"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+					"spark.stop()"
 				],
 				"execution_count": 71
 			}

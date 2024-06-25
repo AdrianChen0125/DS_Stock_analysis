@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f734a02c-c399-48eb-b17d-a605f64167e6"
+				"spark.autotune.trackingId": "4a7df5bb-4f7e-4785-af98-d14771dfb8a4"
 			}
 		},
 		"metadata": {
@@ -324,7 +324,8 @@
 					"spdf = spark.createDataFrame(result)\r\n",
 					"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 					"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_sentiments'.format(datalake_nm)\r\n",
-					"spdf.write.parquet(file_path,mode='overwrite')"
+					"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+					"spark.stop()"
 				],
 				"execution_count": 16
 			}

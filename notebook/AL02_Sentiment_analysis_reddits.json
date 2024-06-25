@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "038afc35-5a34-4992-ac9d-5fd66fd470df"
+				"spark.autotune.trackingId": "86e50607-3538-4c50-949b-7ababa05c5ab"
 			}
 		},
 		"metadata": {
@@ -313,7 +313,8 @@
 					"spdf = spark.createDataFrame(result)\r\n",
 					"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 					"file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/reddit_sentiments'.format(datalake_nm)\r\n",
-					"spdf.write.parquet(file_path,mode='overwrite')"
+					"spdf.write.parquet(file_path,mode='overwrite')\r\n",
+					"spark.stop()"
 				],
 				"execution_count": 16
 			}
