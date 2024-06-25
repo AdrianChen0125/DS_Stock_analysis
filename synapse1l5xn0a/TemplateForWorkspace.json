@@ -22,15 +22,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/spark0625')]",
-			"type": "Microsoft.Synapse/workspaces/bigDataPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/extract data and analysis')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -621,7 +612,7 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "StockDB",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -644,7 +635,7 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "StockDB",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -667,7 +658,7 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "StockDB",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -690,7 +681,7 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "StockDB",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -713,7 +704,7 @@
 						"language": "sql"
 					},
 					"currentConnection": {
-						"databaseName": "master",
+						"databaseName": "StockDB",
 						"poolName": "Built-in"
 					},
 					"resultLimit": 5000
@@ -746,7 +737,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "b9c0d3a4-5bc8-4d72-8e37-14ac9bf458d3"
+						"spark.autotune.trackingId": "acd75063-8a32-474b-bc88-e328f625dc3f"
 					}
 				},
 				"metadata": {
@@ -771,8 +762,7 @@
 						"sparkVersion": "3.4",
 						"nodeCount": 3,
 						"cores": 4,
-						"memory": 28,
-						"automaticScaleJobs": false
+						"memory": 28
 					},
 					"sessionKeepAliveTimeout": 30
 				},
@@ -805,7 +795,6 @@
 					},
 					{
 						"cell_type": "code",
-						"metadata": {},
 						"source": [
 							"# read file from datalake\r\n",
 							"datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
