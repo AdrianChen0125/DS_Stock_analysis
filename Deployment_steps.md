@@ -38,5 +38,7 @@
 ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/b9f9127f-81be-441d-b96a-adda8b6ee151)
 
 
+## step 12 Create pipe and run 
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/be1684e8-cd61-4768-aca1-7deb50993bd6)
 
 
