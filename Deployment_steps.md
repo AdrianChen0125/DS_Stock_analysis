@@ -50,6 +50,12 @@
    ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/4beb8f32-52a7-45cc-85a2-e697b708d9a0)
 
 2. Use password created in step 11
+   ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/f274cd09-4cf0-4649-9ab4-a8824f47eaa5)
+
+3. Load all external table and perform visualisation.
+   ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/7b23f590-4195-4b30-bd49-e5c96975e701)
+
+
 
 
 
