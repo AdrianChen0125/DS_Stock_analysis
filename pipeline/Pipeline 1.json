@@ -10,8 +10,8 @@
 					"timeout": "0.12:00:00",
 					"retry": 0,
 					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
+					"secureOutput": true,
+					"secureInput": true
 				},
 				"userProperties": [],
 				"typeProperties": {
@@ -46,7 +46,7 @@
 					{
 						"activity": "extract stock price",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
