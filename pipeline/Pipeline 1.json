@@ -67,6 +67,15 @@
 						"referenceName": "ETL02_Company_report",
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "spark0625",
@@ -105,6 +114,15 @@
 					"notebook": {
 						"referenceName": "ETL03_reddit",
 						"type": "NotebookReference"
+					},
+					"parameters": {
+						"runid": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
 					},
 					"snapshot": true,
 					"sparkPool": {
@@ -145,6 +163,15 @@
 						"referenceName": "ETL04_Youtube_cm",
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "spark0625",
@@ -184,6 +211,15 @@
 						"referenceName": "ETL05_Stock_news",
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "spark0625",
@@ -221,6 +257,15 @@
 					"notebook": {
 						"referenceName": "ETL06_economic_index",
 						"type": "NotebookReference"
+					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
 					},
 					"snapshot": true,
 					"sparkPool": {
@@ -261,6 +306,15 @@
 						"referenceName": "AL01_TIME_SERIES_Analysis",
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "spark0625",
@@ -300,6 +354,15 @@
 						"referenceName": "AL03_Sentiment_analysis_Youtube",
 						"type": "NotebookReference"
 					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
+					},
 					"snapshot": true,
 					"sparkPool": {
 						"referenceName": "spark0625",
@@ -338,6 +401,15 @@
 					"notebook": {
 						"referenceName": "AL02_Sentiment_analysis_reddits",
 						"type": "NotebookReference"
+					},
+					"parameters": {
+						"run_id": {
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							},
+							"type": "string"
+						}
 					},
 					"snapshot": true,
 					"sparkPool": {
