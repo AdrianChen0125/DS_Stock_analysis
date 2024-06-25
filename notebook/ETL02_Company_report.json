@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "ba4dde5e-b0c6-47ab-b8aa-812b09edd8de"
+				"spark.autotune.trackingId": "87ed730e-323a-446f-ba6d-a8d67618315d"
 			}
 		},
 		"metadata": {
@@ -129,7 +129,8 @@
 					"    )\r\n",
 					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name\r\n",
 					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/company_report'.format(datalake_nm)\r\n",
-					"    final_df_sp.write.parquet(file_path,mode='overwrite')"
+					"    final_df_sp.write.parquet(file_path,mode='overwrite')\r\n",
+					"    spark.stop()"
 				],
 				"execution_count": 20
 			}

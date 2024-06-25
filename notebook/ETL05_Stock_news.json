@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "aeea2407-6a00-40d9-b385-41ed65061d65"
+				"spark.autotune.trackingId": "8edbe3f0-b825-4e23-a602-0be60be944fa"
 			}
 		},
 		"metadata": {
@@ -122,7 +122,8 @@
 					"    \n",
 					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
 					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_news'.format(datalake_nm) \n",
-					"    sp_df_v1.write.parquet(file_path,mode='overwrite')"
+					"    sp_df_v1.write.parquet(file_path,mode='overwrite')\n",
+					"    spark.stop()"
 				],
 				"execution_count": 3
 			}

@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "808ddee3-66bc-4d41-8efd-4189dc9f5b51"
+				"spark.autotune.trackingId": "e82ef9a7-4d73-49c1-bbcd-3ceb36359145"
 			}
 		},
 		"metadata": {
@@ -179,7 +179,8 @@
 					"    spark_df = spark.createDataFrame(df)\n",
 					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
 					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/youtube/youtube_cms'.format(datalake_nm)\n",
-					"    spark_df.write.parquet(file_path,mode='overwrite')"
+					"    spark_df.write.parquet(file_path,mode='overwrite')\n",
+					"    spark.stop()"
 				],
 				"execution_count": 5
 			}

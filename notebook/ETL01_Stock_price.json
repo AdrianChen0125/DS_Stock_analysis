@@ -6,17 +6,21 @@
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "spark0625",
+			"type": "BigDataPoolReference"
+		},
 		"sessionProperties": {
 			"driverMemory": "28g",
 			"driverCores": 4,
 			"executorMemory": "28g",
 			"executorCores": 4,
-			"numExecutors": 2,
+			"numExecutors": 1,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
-				"spark.dynamicAllocation.minExecutors": "2",
-				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "0a912971-c0f0-44e4-b726-9b3bebbbd1bc"
+				"spark.dynamicAllocation.minExecutors": "1",
+				"spark.dynamicAllocation.maxExecutors": "1",
+				"spark.autotune.trackingId": "1718f554-dfde-44e5-8b13-25316ca22eeb"
 			}
 		},
 		"metadata": {
@@ -24,10 +28,25 @@
 			"enableDebugMode": false,
 			"kernelspec": {
 				"name": "synapse_pyspark",
-				"display_name": "python"
+				"display_name": "Synapse PySpark"
 			},
 			"language_info": {
 				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/ac86b402-22ae-4573-b51d-10b49ac53875/resourceGroups/ds_prj-1l5xn0a/providers/Microsoft.Synapse/workspaces/synapse1l5xn0a/bigDataPools/spark0625",
+				"name": "spark0625",
+				"type": "Spark",
+				"endpoint": "https://synapse1l5xn0a.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/spark0625",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -141,9 +160,10 @@
 					"    # Write dataframe into csv in data lake \r\n",
 					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \r\n",
 					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/stock_price'.format(datalake_nm)\r\n",
-					"    sp_df.write.parquet(file_path,mode='overwrite')"
+					"    sp_df.write.parquet(file_path,mode='overwrite')\r\n",
+					"    spark.stop()"
 				],
-				"execution_count": 5
+				"execution_count": 4
 			}
 		]
 	}

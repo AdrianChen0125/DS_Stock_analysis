@@ -16,7 +16,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1c44dedc-0881-4e57-8e50-f85b052cfc64"
+				"spark.autotune.trackingId": "4784d7e3-fadc-43cb-abab-6c6227da5438"
 			}
 		},
 		"metadata": {
@@ -141,7 +141,8 @@
 					"    \n",
 					"    datalake_nm = 'datalake'+mssparkutils.env.getWorkspaceName()[7:] # get datalake name \n",
 					"    file_path ='abfss://files@{0}.dfs.core.windows.net/synapse/workspaces/data/economic_index'.format(datalake_nm) \n",
-					"    all_.write.parquet(file_path,mode='overwrite')"
+					"    all_.write.parquet(file_path,mode='overwrite')\n",
+					"    spark.stop()"
 				],
 				"execution_count": 3
 			}
