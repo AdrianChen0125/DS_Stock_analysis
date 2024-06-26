@@ -39,5 +39,16 @@ Detailed deployment step: https://github.com/AdrianChen0125/DS_Stock_analysis/bl
 ## Demonstrations
 1. Economic index and news and sentiment about stocks:
 ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/78d90472-0821-410b-8662-99ab3d098352)
+2. Time series analysis: Stock price with MACD & signal line and utilise LSTM predict stock value:
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/3a5bb5c6-d504-498c-8f62-f93cb6e9434e)
+3. Company performance:
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/cf2db885-be01-4986-9fcf-e012e795b6a7)
+4. Maket sentiment from reddit and Youtube:
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/3fa32da9-fc78-4153-8059-e40a08dd14e4)
+5. Stock price and market sentiment
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/7d6a720c-1578-4a2f-8836-c7e9485b7906)
 
+
+
+   
 
