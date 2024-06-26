@@ -33,4 +33,5 @@ The Stock Market Insights Platform represents a cutting-edge solution for indivi
 learning, and visualization, the platform revolutionizes the way market insights are generated and utilized, paving the way for smarter, more informed investment decisions.
 
 ## The structure of application
+![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/33ce57bf-83ed-4543-8b03-134803f8f295)
 
