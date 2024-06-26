@@ -1,7 +1,7 @@
 # Project Title: Stock Market Insights Platform
 # data resource api 
 1. Stock price:https://www.alphavantage.co/
-
+2. 
 ## Description:
 The Stock Market Insights Platform is a comprehensive tool designed to provide valuable insights into the stock market by leveraging advanced data processing, machine learning, and visualization techniques.
 The platform aims to empower investors, analysts, and traders with actionable information to make informed decisions in the dynamic world of finance.
