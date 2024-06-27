@@ -54,7 +54,7 @@ Detailed deployment step: https://github.com/AdrianChen0125/DS_Stock_analysis/bl
       ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/a63ce658-9800-47e8-be9a-6b3feea7522b)
    3. Correlation
       ![image](https://github.com/AdrianChen0125/DS_Stock_analysis/assets/105028082/9c2c911b-6132-41b1-8840-c44ebf139a90)
-
+      there is no significant correlation between stock price and sentiment score. From scatter plot, it indicated that most stocks' price did not vary with       sentiment score.  
 
 
 
